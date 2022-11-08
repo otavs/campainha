@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
 import { connect } from './db'
 import { User } from './schemas/user'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { res, errorRes } from './common'
 
