@@ -24,11 +24,10 @@ import {
 } from './styles'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { parseJwt } from '../utils'
 import BootstrapModal from 'react-bootstrap/Modal'
 import BootstrapForm from 'react-bootstrap/Form'
 
-export default function Public() {
+export default function Root() {
   const [users, setUsers] = useState<User[]>([])
   const [editUser, setEditUser] = useState<User>({})
   const [showModal, setShowModal] = useState(false)
@@ -38,15 +37,6 @@ export default function Public() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-
-    if (!token) return navigate('/login')
-
-    const tokenObj = parseJwt(token)
-    if (tokenObj.exp * 1000 < Date.now()) {
-      return navigate('/login')
-    }
-
     fetch('.netlify/functions/user/all')
       .then((res) => res.json())
       .then((res) =>
@@ -75,12 +65,8 @@ export default function Public() {
           >
             <Infos>
               <Info bold>{user.address}</Info>
-              <Info>
-                {user.name}
-              </Info>
-              <Info>
-                {formatPhone(user.phone)}
-              </Info>
+              <Info>{user.name}</Info>
+              <Info>{formatPhone(user.phone)}</Info>
             </Infos>
             <CallButtons>
               <EditIcon />

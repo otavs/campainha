@@ -3,15 +3,26 @@ import Public from './Public'
 import Login from './Login'
 import User from './User'
 import Root from './Root'
+import Protected from './Routes'
+import { Role } from './types'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Public />}></Route>
-      <Route path="/login" element={<Login />}></Route>
-      <Route path="/user" element={<User />}></Route>
-      <Route path="/adm" element={<Root />}></Route>
-      <Route path="/admin" element={<Root />}></Route>
+      <Route path="/" element={<Public />} />
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/user"
+        element={<Protected roles={[Role.User]} element={<User />} />}
+      />
+      <Route
+        path="/adm"
+        element={<Protected roles={[Role.Root]} element={<Root />} />}
+      />
+      <Route
+        path="/admin"
+        element={<Protected roles={[Role.Root]} element={<Root />} />}
+      />
     </Routes>
   )
 }
