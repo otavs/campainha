@@ -151,6 +151,7 @@ async function updateUser(ev: Event) {
     return errorRes(401, 'not allowed to update other user')
 
   body.email = body.email?.toLowerCase()
+  body.password = body.password ? await bcrypt.hash(body.password, 10) : undefined
 
   try {
     await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id)}, body)
