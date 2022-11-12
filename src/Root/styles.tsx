@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import InputMask from 'react-input-mask'
 import { SlPencil as PencilIcon } from 'react-icons/sl'
+import { ClipLoader } from 'react-spinners'
 
 export const Main = styled.div`
   display: flex;
@@ -207,4 +208,8 @@ export const Logout = styled.a`
   margin: auto;
   cursor: pointer;
   text-decoration: none;
+`
+
+export const Spinner = styled(ClipLoader)`
+  margin-top: 6px;
 `

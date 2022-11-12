@@ -16,6 +16,7 @@ import {
 } from './styles'
 import { useNavigate } from 'react-router-dom'
 import { parseJwt } from '../utils'
+import { ClipLoader } from 'react-spinners'
 
 export default function Public() {
   const [users, setUsers] = useState<User[]>([])
@@ -40,26 +41,26 @@ export default function Public() {
   return (
     <Main>
       <List>
+        {isLoadingUsers && <ClipLoader />}
         {usersFiltered.length == 0 && !isLoadingUsers && (
           <EmptyUsers>Nenhum usuário encontrado</EmptyUsers>
         )}
-        {usersFiltered.length > 0 &&
-          usersFiltered.map((user) => (
-            <Item
-              key={user._id}
-              onClick={() => {
-                if (!!user.phone) window.open(`https://wa.me/${user.phone}`)
-              }}
-              clickable={!!user.phone}
-            >
-              <Infos>
-                <Info bold>{user.address}</Info>
-                <Info>{user.name}</Info>
-                {/* <Info>{user.description}</Info> */}
-              </Infos>
-              <CallButtons>
-                {user.phone ? <WhatsIcon /> : ''}
-                {/* <CallButton
+        {usersFiltered.map((user) => (
+          <Item
+            key={user._id}
+            onClick={() => {
+              if (!!user.phone) window.open(`https://wa.me/${user.phone}`)
+            }}
+            clickable={!!user.phone}
+          >
+            <Infos>
+              <Info bold>{user.address}</Info>
+              <Info>{user.name}</Info>
+              {/* <Info>{user.description}</Info> */}
+            </Infos>
+            <CallButtons>
+              {user.phone ? <WhatsIcon /> : ''}
+              {/* <CallButton
                 onClick={() => {
                   window.open(`https://wa.me/${user.phone}`)
                 }}
@@ -75,9 +76,9 @@ export default function Public() {
                 <PhoneIcon />
                 <ButtonText>Ligar</ButtonText>
               </CallButton> */}
-              </CallButtons>
-            </Item>
-          ))}
+            </CallButtons>
+          </Item>
+        ))}
       </List>
       {/* <Login href="#" onClick={login}>
         Config

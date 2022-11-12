@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { ClipLoader } from 'react-spinners'
 
 export const Main = styled.div`
   display: flex;
@@ -92,4 +93,8 @@ export const ErrorDiv = styled.div`
   color: red;
   margin-bottom: 8px;
   text-align: center;
+`
+
+export const Spinner = styled(ClipLoader)`
+  margin-top: 6px;
 `

@@ -9,6 +9,7 @@ import {
   Title,
   SubmitDiv,
   ErrorDiv,
+  Spinner
 } from './styles'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -17,6 +18,7 @@ export default function Login() {
   const [userName, setUserName] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
   return (
@@ -43,7 +45,7 @@ export default function Login() {
         </InputDiv>
         <Error />
         <SubmitDiv>
-          <Submit>Entrar</Submit>
+          <Submit>{isLoading ? <Spinner size={12} /> : 'Entrar'}</Submit>
         </SubmitDiv>
       </Form>
     </Main>
@@ -51,6 +53,7 @@ export default function Login() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setIsLoading(true)
     axios
       .post('.netlify/functions/auth', {
         email: userName,
@@ -74,6 +77,9 @@ export default function Login() {
           return
         }
         setError('Erro no servidor')
+      })
+      .finally(() => {
+        setIsLoading(false)
       })
   }
 
