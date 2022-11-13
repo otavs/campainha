@@ -20,6 +20,7 @@ const routes = {
   },
   PUT: {
     '/user': [updateUser, ['root', 'user']],
+    '/user/updatePassword': [updatePassword, ['root', 'user']],
   },
 }
 
@@ -42,7 +43,7 @@ const handler: Handler = async (ev: Event, ctx) => {
   if (!token) return errorRes(401, 'missing token')
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload
     ev.user = (await User.findById(decoded.id)) as IUser
   } catch (err) {
     console.log(err)
@@ -151,14 +152,46 @@ async function updateUser(ev: Event) {
     return errorRes(401, 'not allowed to update other user')
 
   body.email = body.email?.toLowerCase()
-  body.password = body.password ? await bcrypt.hash(body.password, 10) : undefined
+  body.password = body.password
+    ? await bcrypt.hash(body.password, 10)
+    : undefined
 
   try {
-    await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id)}, body)
+    await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, body)
     return res(200)
   } catch (err) {
     console.log(err)
-    return errorRes(500, 'error deleting user', err)
+    return errorRes(500, 'error updating user', err)
+  }
+}
+
+async function updatePassword(ev: Event) {
+  if (!ev.body) return errorRes(400, 'missing body from request')
+
+  let body = JSON.parse(ev.body) as any
+  if (typeof body != 'object')
+    return errorRes(400, 'body must be a JSON object')
+
+  if (!body.password) return errorRes(400, 'password is required')
+
+  const id = body._id as string
+  if (!id) return errorRes(400, 'id is required')
+  if (!mongoose.isValidObjectId(id)) return errorRes(400, 'invalid id')
+
+  if (ev.user?.role == 'user' && id != ev.user._id)
+    return errorRes(401, 'not allowed to update other user')
+
+  body = {
+    _id: body._id,
+    password: await bcrypt.hash(body.password, 10),
+  }
+
+  try {
+    await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, body)
+    return res(200)
+  } catch (err) {
+    console.log(err)
+    return errorRes(500, 'error updating user', err)
   }
 }
 
