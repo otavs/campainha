@@ -21,30 +21,38 @@ import {
   CheckBoxLabel,
   Erro,
   Cancel,
+  Spinner,
 } from './styles'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import BootstrapModal from 'react-bootstrap/Modal'
 import BootstrapForm from 'react-bootstrap/Form'
+import { ClipLoader } from 'react-spinners'
 
 export default function Root() {
   const [users, setUsers] = useState<User[]>([])
   const [editUser, setEditUser] = useState<User>({})
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState('')
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [isEditLoading, setIsEditLoading] = useState(false)
 
   const navigate = useNavigate()
 
   useEffect(() => {
+    setIsLoadingUsers(true)
     fetch('.netlify/functions/user/all')
       .then((res) => res.json())
-      .then((res) =>
+      .then((res) => {
+        setIsLoadingUsers(false)
         setUsers(
           res.map((user: User) => ({ ...user, phone: user.phone?.slice(2) }))
         )
-      )
-      .catch((err) => console.log(err))
+      })
+      .catch((err) => {
+        console.log(err)
+        setIsLoadingUsers(false)
+      })
   }, [])
 
   return (
@@ -53,6 +61,7 @@ export default function Root() {
         <TitleText>Editar Usuários</TitleText>
       </TitleDiv>
       <List>
+        {isLoadingUsers && <ClipLoader />}
         {users.map((user) => (
           <Item
             key={user._id}
@@ -130,10 +139,12 @@ export default function Root() {
               />
             </CheckBoxDiv>
             <SubmitDiv>
-              <Cancel type="button" onClick={() => setShowModal(false)}>
+              <Cancel type="button" onClick={onCancel}>
                 Cancelar
               </Cancel>
-              <Submit>Salvar</Submit>
+              <Submit>
+                {isEditLoading ? <Spinner size={12} /> : 'Salvar'}
+              </Submit>
             </SubmitDiv>
             <Erro>{error}</Erro>
           </Form>
@@ -162,7 +173,6 @@ export default function Root() {
         }
       )
       .then((res) => {
-        setIsEditLoading(false)
         setShowModal(false)
         setUsers((users) => {
           const i = users.findIndex(({ _id }) => _id == editUser._id)
@@ -175,9 +185,16 @@ export default function Root() {
         if (err.response.status == 401) {
           return navigate('/login')
         }
-        setIsEditLoading(false)
         setError('Erro no servidor')
       })
+      .finally(() => {
+        setTimeout(() => setIsEditLoading(false), 200)
+      })
+  }
+
+  function onCancel() {
+    setShowModal(false)
+    setTimeout(() => setIsEditLoading(false), 200)
   }
 
   function logout(e: React.MouseEvent) {
@@ -188,6 +205,8 @@ export default function Root() {
 
   function formatPhone(phone?: string) {
     if (!phone) return ''
-    return `(${phone.substring(0, 2)}) ${phone.substring(2, 6)}-${phone.slice(6)}`
+    return `(${phone.substring(0, 2)}) ${phone.substring(2, 6)}-${phone.slice(
+      6
+    )}`
   }
 }

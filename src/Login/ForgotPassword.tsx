@@ -10,14 +10,12 @@ import {
   SubmitDiv,
   MsgDiv,
   Spinner,
-  RecoverPasswordDiv,
 } from './styles'
 import axios from 'axios'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 export default function Login() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [msg, setMsg] = useState<{
     text: string
     type: 'error' | 'success'
@@ -27,13 +25,13 @@ export default function Login() {
   const location = useLocation()
 
   useEffect(() => {
-    if (location.state?.msg) setMsg(location.state.msg)
+    if (location.state?.email) setEmail(location.state.email)
   }, [])
 
   return (
     <Main>
       <Form onSubmit={onSubmit}>
-        <Title>Login</Title>
+        <Title>Recuperar Senha</Title>
         <InputDiv>
           <Input
             type="text"
@@ -44,25 +42,12 @@ export default function Login() {
           />
           <Label>Email</Label>
         </InputDiv>
-        <InputDiv>
-          <Input
-            type="password"
-            name="password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Label>Senha</Label>
-        </InputDiv>
         <Msg />
-        <SubmitDiv>
-          <Submit>{isLoading ? <Spinner size={12} /> : 'Entrar'}</Submit>
-        </SubmitDiv>
-        <RecoverPasswordDiv>
-          <Link to="/forgotPass" state={{ email }}>
-            Recuperar Senha
-          </Link>
-        </RecoverPasswordDiv>
+        {msg?.type != 'success' && (
+          <SubmitDiv>
+            <Submit>{isLoading ? <Spinner size={12} /> : 'Enviar'}</Submit>
+          </SubmitDiv>
+        )}
       </Form>
     </Main>
   )
@@ -70,29 +55,33 @@ export default function Login() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsLoading(true)
+    setMsg(null)
+    const emailToSend = email
     axios
-      .post('.netlify/functions/auth/login', {
-        email: email,
-        password,
+      .post('.netlify/functions/auth/forgotPassword', {
+        email,
       })
       .then((res) => {
         console.log(res)
-        setMsg(null)
-        localStorage.setItem('token', res.data.token)
-        redirectRole(res.data.user.role)
+        setMsg({
+          text: `Email de recuperação enviado para ${emailToSend}`,
+          type: 'success',
+        })
         return
       })
       .catch((err) => {
         console.log(err)
         if (err.response.status == 404) {
-          setMsg({ text: 'Usuário não existe', type: 'error' })
+          setMsg({
+            text: 'Usuário não existe',
+            type: 'error',
+          })
           return
         }
-        if (err.response.status == 401) {
-          setMsg({ text: 'Senha inválida', type: 'error' })
-          return
-        }
-        setMsg({ text: 'Erro no servidor', type: 'error' })
+        setMsg({
+          text: 'Erro no servidor',
+          type: 'error',
+        })
       })
       .finally(() => {
         setIsLoading(false)

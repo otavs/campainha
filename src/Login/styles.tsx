@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { ClipLoader } from 'react-spinners'
 
 export const Main = styled.div`
   display: flex;
@@ -88,8 +89,26 @@ export const Submit = styled.button`
   }
 `
 
-export const ErrorDiv = styled.div`
-  color: red;
+export const MsgDiv = styled.div<{ type: 'error' | 'success' }>`
+  color: ${({ type }) => (type == 'error' ? 'red' : 'green')};
   margin-bottom: 8px;
   text-align: center;
+`
+
+export const Spinner = styled(ClipLoader)`
+  margin-top: 6px;
+`
+
+export const RecoverPasswordDiv = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  & a {
+    color: #1326ca;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  & a:hover {
+    text-decoration: underline;
+  }
 `
