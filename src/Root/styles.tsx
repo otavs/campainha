@@ -16,10 +16,12 @@ export const TitleDiv = styled.div`
   margin-top: auto;
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0 10px;
 `
 
 export const TitleText = styled.div`
-  margin-top: 12px;
   text-align: center;
   font-weight: bold;
   font-size: 20px;
@@ -96,6 +98,13 @@ export const EditIcon = styled(PencilIcon)`
   width: 20px;
   height: 20px;
   margin-right: 2px;
+`
+
+export const EditTitleIcon = styled(PencilIcon)`
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  margin-top: 8px;
 `
 
 export const ButtonText = styled.div`
@@ -205,7 +214,7 @@ export const Erro = styled.div`
 `
 
 export const Logout = styled.a`
-  margin: auto;
+  margin-bottom: auto;
   cursor: pointer;
   text-decoration: none;
 `

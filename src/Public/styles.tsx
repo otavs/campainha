@@ -11,6 +11,21 @@ export const Main = styled.div`
   background-color: #cdf6f7;
 `
 
+export const TitleDiv = styled.div`
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 10px;
+`
+
+export const TitleText = styled.div`
+  margin-top: 12px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+`
+
 export const List = styled.div`
   display: flex;
   flex-direction: column;

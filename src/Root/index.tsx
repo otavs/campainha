@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { User } from '../types'
+import { Config, User } from '../types'
 import {
   Item,
   List,
@@ -22,6 +22,7 @@ import {
   Erro,
   Cancel,
   Spinner,
+  EditTitleIcon,
 } from './styles'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -31,11 +32,15 @@ import { ClipLoader } from 'react-spinners'
 
 export default function Root() {
   const [users, setUsers] = useState<User[]>([])
+  const [config, setConfig] = useState<Config>({})
   const [editUser, setEditUser] = useState<User>({})
+  const [editConfig, setEditConfig] = useState<Config>({})
   const [showModal, setShowModal] = useState(false)
+  const [showTitleModal, setShowTitleModal] = useState(false)
   const [error, setError] = useState('')
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [isEditLoading, setIsEditLoading] = useState(false)
+  const [isEditTitleLoading, setIsEditTitleLoading] = useState(false)
 
   const navigate = useNavigate()
 
@@ -53,12 +58,27 @@ export default function Root() {
         console.log(err)
         setIsLoadingUsers(false)
       })
+    fetch('.netlify/functions/config')
+      .then((res) => res.json())
+      .then((res) => {
+        setConfig(res)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }, [])
 
   return (
     <Main>
       <TitleDiv>
-        <TitleText>Editar Usuários</TitleText>
+        {config.title && <TitleText>{config.title}</TitleText>}
+        <EditTitleIcon
+          onClick={() => {
+            setEditConfig(config)
+            setShowTitleModal(true)
+            setError('')
+          }}
+        />
       </TitleDiv>
       <List>
         {isLoadingUsers && <ClipLoader />}
@@ -86,6 +106,7 @@ export default function Root() {
       <Logout href="#" onClick={logout}>
         Sair
       </Logout>
+
       <BootstrapModal
         show={showModal}
         onHide={() => setShowModal(false)}
@@ -150,6 +171,38 @@ export default function Root() {
           </Form>
         </BootstrapModal.Body>
       </BootstrapModal>
+
+      <BootstrapModal
+        show={showTitleModal}
+        onHide={() => setShowTitleModal(false)}
+        size="lg"
+        centered
+      >
+        <BootstrapModal.Body>
+          <Form onSubmit={onSubmitTitle}>
+            <InputDiv>
+              <Input
+                type="text"
+                mask=""
+                value={editConfig.title}
+                onChange={(e) =>
+                  setEditConfig({ ...editConfig, title: e.target.value })
+                }
+              />
+              <Label>Título</Label>
+            </InputDiv>
+            <SubmitDiv>
+              <Cancel type="button" onClick={onCancelTitle}>
+                Cancelar
+              </Cancel>
+              <Submit>
+                {isEditTitleLoading ? <Spinner size={12} /> : 'Salvar'}
+              </Submit>
+            </SubmitDiv>
+            <Erro>{error}</Erro>
+          </Form>
+        </BootstrapModal.Body>
+      </BootstrapModal>
     </Main>
   )
 
@@ -192,9 +245,39 @@ export default function Root() {
       })
   }
 
+  function onSubmitTitle(e: React.FormEvent) {
+    e.preventDefault()
+    setIsEditTitleLoading(true)
+    axios
+      .put('.netlify/functions/config', editConfig, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      .then((res) => {
+        setShowTitleModal(false)
+        setConfig(() => editConfig)
+        setError('')
+      })
+      .catch((err) => {
+        if (err.response.status == 401) {
+          return navigate('/login')
+        }
+        setError('Erro no servidor')
+      })
+      .finally(() => {
+        setTimeout(() => setIsEditTitleLoading(false), 200)
+      })
+  }
+
   function onCancel() {
     setShowModal(false)
     setTimeout(() => setIsEditLoading(false), 200)
+  }
+
+  function onCancelTitle() {
+    setShowTitleModal(false)
+    setTimeout(() => setIsEditTitleLoading(false), 200)
   }
 
   function logout(e: React.MouseEvent) {
