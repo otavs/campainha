@@ -9,6 +9,10 @@ export interface User {
   enabled?: boolean
 }
 
+export interface Config {
+  title?: string,
+}
+
 export enum Role {
   Root = 'root',
   User = 'user',

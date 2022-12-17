@@ -1,9 +1,7 @@
 import { Handler } from '@netlify/functions'
-import { connect } from './db'
-import { res, errorRes, parseToken } from './common'
+import { handleRequest, res, errorRes } from './common'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { User, IUser } from './schemas/user'
+import { User } from './schemas/user'
 import { Event } from './common'
 import mongoose from 'mongoose'
 
@@ -22,38 +20,6 @@ const routes = {
     '/user': [updateUser, ['root', 'user']],
     '/user/updatePassword': [updatePassword, ['root', 'user']],
   },
-}
-
-const handler: Handler = async (ev: Event, ctx) => {
-  const path = ev.path.replace('/.netlify/functions', '')
-
-  const route = routes[ev.httpMethod]?.[path]
-  if (!route) return errorRes(404, 'route not found')
-
-  const err = await connect()
-  if (err) {
-    return err
-  }
-
-  const [handlerFunc, allowedRoles] = route
-
-  if (allowedRoles.includes('all')) return handlerFunc(ev)
-
-  const token = parseToken(ev.headers['authorization'])
-  if (!token) return errorRes(401, 'missing token')
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload
-    ev.user = (await User.findById(decoded.id)) as IUser
-  } catch (err) {
-    console.log(err)
-    return errorRes(500, err)
-  }
-
-  if (!allowedRoles.includes(ev.user.role))
-    return errorRes(401, 'user role not allowed')
-
-  return handlerFunc(ev)
 }
 
 async function getUserById(ev: Event) {
@@ -193,6 +159,10 @@ async function updatePassword(ev: Event) {
     console.log(err)
     return errorRes(500, 'error updating user', err)
   }
+}
+
+const handler: Handler = async (ev: Event, ctx) => {
+  return await handleRequest(ev, ctx, routes)
 }
 
 export { handler }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { User } from '../types'
+import { User, Config } from '../types'
 import {
   Item,
   List,
@@ -13,6 +13,8 @@ import {
   ButtonText,
   Login,
   EmptyUsers,
+  TitleDiv,
+  TitleText,
 } from './styles'
 import { useNavigate } from 'react-router-dom'
 import { parseJwt } from '../utils'
@@ -20,6 +22,7 @@ import { ClipLoader } from 'react-spinners'
 
 export default function Public() {
   const [users, setUsers] = useState<User[]>([])
+  const [config, setConfig] = useState<Config>({})
   const [isLoadingUsers, setLoadingUsers] = useState(true)
   const navigate = useNavigate()
 
@@ -34,12 +37,25 @@ export default function Public() {
         console.log(err)
         setLoadingUsers(false)
       })
+    fetch('.netlify/functions/config')
+      .then((res) => res.json())
+      .then((res) => {
+        setConfig(res)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }, [])
 
   const usersFiltered = users.filter((user) => user.enabled)
 
   return (
     <Main>
+      {config.title && (
+        <TitleDiv>
+          <TitleText>{config.title}</TitleText>
+        </TitleDiv>
+      )}
       <List>
         {isLoadingUsers && <ClipLoader />}
         {usersFiltered.length == 0 && !isLoadingUsers && (
@@ -80,6 +96,7 @@ export default function Public() {
           </Item>
         ))}
       </List>
+      {config.title && <TitleDiv />}
       {/* <Login href="#" onClick={login}>
         Config
       </Login> */}
